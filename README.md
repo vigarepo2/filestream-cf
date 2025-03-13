@@ -42,7 +42,7 @@ const PUBLIC_BOT = false; // Make your bot public.
     - Copy paste the generated code to cloudflare workers.
 - Finally, **Deploy**.
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/vauth/filestream-cf)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/vigarepo2/filestream-cf)
 ### Setup:
 - Once you deployed the bot on Cloudflare.
 - Check `XXX.XXXX.workers.dev/getMe` to verify your bot authorization.
