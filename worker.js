@@ -6,7 +6,7 @@ const BOT_SECRET = "vikram"; // Insert a powerful secret text (only [A-Z, a-z, 0
 const BOT_OWNER = 6986536422; // Insert your telegram account id.
 const BOT_CHANNEL = -1001872371917; // Insert your telegram channel id which the bot is admin in.
 const SIA_SECRET = "vikram"; // Insert a powerful secret text and keep it safe.
-const PUBLIC_BOT = false; // Make your bot public (only [true, false] are allowed).
+const PUBLIC_BOT = true; // Make your bot public (only [true, false] are allowed).
 
 // ---------- Do Not Modify ---------- // 
 
@@ -226,14 +226,24 @@ class Bot {
     } else {return await response.json()}
   }
 
-  static async sendDocument(chat_id, file_id) {
-    const response = await fetch(await this.apiUrl('sendDocument', {chat_id: chat_id, document: file_id}))
+  static async sendDocument(chat_id, file_id, caption = "") {
+    const response = await fetch(await this.apiUrl('sendDocument', {
+      chat_id: chat_id, 
+      document: file_id,
+      caption: caption || "",
+      parse_mode: 'markdown'
+    }))
     if (response.status == 200) {return (await response.json()).result;
     } else {return await response.json()}
   }
 
-  static async sendPhoto(chat_id, file_id) {
-    const response = await fetch(await this.apiUrl('sendPhoto', {chat_id: chat_id, photo: file_id}))
+  static async sendPhoto(chat_id, file_id, caption = "") {
+    const response = await fetch(await this.apiUrl('sendPhoto', {
+      chat_id: chat_id, 
+      photo: file_id,
+      caption: caption || "",
+      parse_mode: 'markdown'
+    }))
     if (response.status == 200) {return (await response.json()).result;
     } else {return await response.json()}
   }
@@ -365,6 +375,20 @@ async function onMessage(event, message) {
     return
   }
 
+  if (message.text && message.text === "/start") {
+    const buttons = [
+      [{ text: "Support", url: "https://t.me/yourusername" }],
+      [{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]
+    ];
+    
+    return Bot.sendMessage(
+      message.chat.id, 
+      message.message_id, 
+      "*🚀 Welcome to FileStream Bot!*\n\n📤 Send me any file, photo, video or audio to get:\n• Direct download link\n• Streaming link\n• Telegram link\n• Inline sharing\n\n📌 *Maximum file size: 4GB (uploads), 20MB (inline sharing)*\n\n💡 Try using me in inline mode by typing my username in any chat!", 
+      buttons
+    );
+  }
+
   if (message.text && message.text.startsWith("/start ")) {
     const file = message.text.split("/start ")[1]
     try {await Cryptic.deHash(file)} catch {return await Bot.sendMessage(message.chat.id, message.message_id, ERROR_407.description)}
@@ -375,16 +399,16 @@ async function onMessage(event, message) {
 
     if (data.document) {
       fID = data.document.file_id;
-      return await Bot.sendDocument(message.chat.id, fID)
+      return await Bot.sendDocument(message.chat.id, fID, data.caption)
     } else if (data.audio) {
       fID = data.audio.file_id;
-      return await Bot.sendDocument(message.chat.id, fID)
+      return await Bot.sendDocument(message.chat.id, fID, data.caption)
     } else if (data.video) {
       fID = data.video.file_id;
-      return await Bot.sendDocument(message.chat.id, fID)
+      return await Bot.sendDocument(message.chat.id, fID, data.caption)
     } else if (data.photo) {
       fID = data.photo[data.photo.length - 1].file_id;
-      return await Bot.sendPhoto(message.chat.id, fID)
+      return await Bot.sendPhoto(message.chat.id, fID, data.caption)
     } else {
       return Bot.sendMessage(message.chat.id, message.message_id, "Bad Request: File not found")
     }
@@ -398,23 +422,23 @@ async function onMessage(event, message) {
   if (message.document){
     fID = message.document.file_id;
     fName = message.document.file_name;
-    fType = message.document.mime_type.split("/")[0]
-    fSave = await Bot.sendDocument(BOT_CHANNEL, fID)
+    fType = message.document.mime_type.split("/")[0];
+    fSave = await Bot.sendDocument(BOT_CHANNEL, fID, message.caption);
   } else if (message.audio) {
     fID = message.audio.file_id;
     fName = message.audio.file_name;
-    fType = message.audio.mime_type.split("/")[0]
-    fSave = await Bot.sendDocument(BOT_CHANNEL, fID)
+    fType = message.audio.mime_type.split("/")[0];
+    fSave = await Bot.sendDocument(BOT_CHANNEL, fID, message.caption);
   } else if (message.video) {
     fID = message.video.file_id;
     fName = message.video.file_name;
-    fType = message.video.mime_type.split("/")[0]
-    fSave = await Bot.sendDocument(BOT_CHANNEL, fID)
+    fType = message.video.mime_type.split("/")[0];
+    fSave = await Bot.sendDocument(BOT_CHANNEL, fID, message.caption);
   } else if (message.photo) {
     fID = message.photo[message.photo.length - 1].file_id;
     fName = message.photo[message.photo.length - 1].file_unique_id + '.jpg';
     fType = "image/jpg".split("/")[0];
-    fSave = await Bot.sendPhoto(BOT_CHANNEL, fID)
+    fSave = await Bot.sendPhoto(BOT_CHANNEL, fID, message.caption);
   } else {
     const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
     return Bot.sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio *(t<=4GB, e<=20MB)*.", buttons)
